@@ -14,7 +14,7 @@ use crate::gpt_client::GptEngine;
 #[command(author, version, about, long_about = None)]
 struct Cli {
 
-    #[arg(short, long, env, value_name = "SOCKET_DIR", default_value = "/tmp/")]
+    #[arg(short, long, env, value_name = "SOCKET_DIR")]
     socket_dir: PathBuf,
 
     #[arg(short, long, env, value_name = "TOKEN")]
@@ -55,8 +55,8 @@ async fn main() -> Result<(), String> {
         fs::remove_file(socket_path).ok();
         let listener = UnixListener::bind(socket_dir_string.clone() + socket_path).map_err(|e| e.to_string())?;
 
-        // Give the socket a mode of 770 to allow users in same group to access.
-        let permissions = Permissions::from_mode(0o770);
+        // Give the socket a mode of 660 to allow users in same group to access.
+        let permissions = Permissions::from_mode(0o660);
         fs::set_permissions(socket_path, permissions).map_err(|e| e.to_string())?;
 
         println!("Server listening on {}", socket_path);
