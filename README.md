@@ -1,6 +1,6 @@
 # Gpt for UDS
 
-![Rust pipeline](https://github.com/SagenApp/gpt_for_uds_rs/actions/workflows/rust.yml/badge.svg)
+![Rust pipeline](https://github.com/SagenApp/gpt_for_uds_rs/actions/workflows/rust.yml/badge.svg?event=push)
 
 This project is a linux daemon mean to run in the background through Systemd for making it easier integrating other applications with ChatGPT.
 
