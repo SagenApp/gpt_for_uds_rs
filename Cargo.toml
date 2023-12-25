@@ -22,3 +22,9 @@ path = "src/main.rs"
 [[bin]]
 name = "gpt_for_uds_client"
 path = "src/client.rs"
+
+[profile.release]
+panic = "abort" # Make panics abort immediately.
+lto = true # Enable link-time optimization.
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
