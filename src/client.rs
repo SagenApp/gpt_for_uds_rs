@@ -1,4 +1,6 @@
 use std::io::{self, Write};
+use std::path::PathBuf;
+use clap::Parser;
 use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::UnixStream;
@@ -16,23 +18,48 @@ pub struct GptMessage {
     pub message: String,
 }
 
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct ClientCli {
+
+    #[arg(short, long, env, value_name = "SOCKET_DIR", default_value = "/run/gpt-for-uds/gpt4.sock")]
+    socket_dir: PathBuf,
+
+    #[arg(long, env, value_name = "SYSTEM_MESSAGE", default_value = "You are a code expert, answer all the users questions to the best of your ability. Try to find bugs in your own statements while going through it.")]
+    system_message: String,
+}
+
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), String> {
+    let cli = ClientCli::parse();
+
+    if cli.socket_dir.is_dir() {
+        return Err("Socket directory must be a socket file!".to_string());
+    }
+    if !cli.socket_dir.exists() {
+        return Err("Socket directory must exist!".to_string());
+    }
+
+    let socket_dir_string: String = match cli.socket_dir.to_str() {
+        Some(s) => s.to_string(),
+        None => return Err("Socket directory must be a valid UTF-8 string!".to_string()),
+    };
+
     let mut conversation: Vec<GptMessage> = Vec::new();
     let system_message = GptMessage {
         actor: GptActor::System,
-        message: "You are a code expert, answer all the users questions to the best of your ability. Try to find bugs in your own statements while going through it.".to_string(),
+        message: cli.system_message,
     };
     conversation.push(system_message.clone());
 
     println!("\nSystem: {}\n", system_message.message);
 
     loop {
-        handle_user_question(&mut conversation).await?;
+        handle_user_question(&mut conversation, socket_dir_string.clone()).await.map_err(|e| e.to_string())?;
     }
 }
 
-async fn handle_user_question(conversation: &mut Vec<GptMessage>) -> Result<(), Box<dyn std::error::Error>> {
+async fn handle_user_question(conversation: &mut Vec<GptMessage>, socket_file: String) -> Result<(), Box<dyn std::error::Error>> {
     print!("User: ");
     io::stdout().flush().unwrap();
     let from_user = read_line_from_user()?;
@@ -43,7 +70,7 @@ async fn handle_user_question(conversation: &mut Vec<GptMessage>) -> Result<(), 
 
     let json_conversation = serialize_vec_to_json(&conversation)?;
 
-    let mut stream = UnixStream::connect("/tmp/rust_uds_gpt4.sock").await?;
+    let mut stream = UnixStream::connect(socket_file).await?;
 
     // Write the length of the string as a 4 byte u32
     let len = json_conversation.len() as u32;

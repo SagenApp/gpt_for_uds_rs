@@ -4,6 +4,8 @@ mod client;
 
 use tokio::net::UnixListener;
 use std::fs;
+use std::fs::Permissions;
+use std::os::unix::fs::PermissionsExt;
 use std::path::PathBuf;
 use clap::Parser;
 use crate::gpt_client::GptEngine;
@@ -33,16 +35,29 @@ async fn main() -> Result<(), String> {
         return Err("Socket directory must exist!".to_string());
     }
 
+    let mut socket_dir_string: String = match cli.socket_dir.to_str() {
+        Some(s) => s.to_string(),
+        None => return Err("Socket directory must be a valid UTF-8 string!".to_string()),
+    };
+
+    if (!socket_dir_string.ends_with("/")) {
+        socket_dir_string = socket_dir_string + "/";
+    }
+
     let token = cli.token;
     let socket_paths = [
-        ("/tmp/rust_uds_gpt4_32k.sock", GptEngine::Gpt4_32k(token.clone())),
-        ("/tmp/rust_uds_gpt4.sock", GptEngine::Gpt4(token.clone())),
-        ("/tmp/rust_uds_gpt3_5_turbo.sock", GptEngine::Gpt35Turbo(token)),
+        ("gpt4_32k.sock", GptEngine::Gpt4_32k(token.clone())),
+        ("gpt4.sock", GptEngine::Gpt4(token.clone())),
+        ("gpt3_5_turbo.sock", GptEngine::Gpt35Turbo(token)),
     ];
 
     for (socket_path, engine) in socket_paths {
         fs::remove_file(socket_path).ok();
-        let listener = UnixListener::bind(socket_path).map_err(|e| e.to_string())?;
+        let listener = UnixListener::bind(socket_dir_string.clone() + socket_path).map_err(|e| e.to_string())?;
+
+        // Give the socket a mode of 770 to allow users in same group to access.
+        let permissions = Permissions::from_mode(0o770);
+        fs::set_permissions(socket_path, permissions).map_err(|e| e.to_string())?;
 
         println!("Server listening on {}", socket_path);
 
