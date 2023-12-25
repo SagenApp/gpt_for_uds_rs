@@ -1,0 +1,13 @@
+[Unit]
+Description=Chat GPT for Unix Domain Socket
+After=network.target
+
+[Service]
+Type=simple
+User=gptforuds
+EnvironmentFile=/etc/gpt-for-uds/gpt-for-uds.conf
+ExecStart=/usr/bin/gpt-for-uds
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

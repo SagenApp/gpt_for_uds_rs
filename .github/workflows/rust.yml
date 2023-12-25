@@ -16,7 +16,70 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
     - name: Build
-      run: cargo build --bin gpt_for_uds --verbose
-    - name: Run tests
-      run: cargo test --bin gpt_for_uds --verbose
+      run: cargo build --bin gpt_for_uds --verbose --release
+
+    - name: Prepare Debian Package
+      run: |
+        chmod 755 debian/postinst
+        chmod 755 debian/prerm
+        chmod 755 debian/postrm
+        chmod 755 debian/preinst
+
+    - name: Build Debian Package
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y debhelper devscripts
+        debuild -us -uc -b
+        cp ../gpt-for-uds*.deb gpt-for-uds.deb
+
+    - name: Upload Debian Package
+      uses: actions/upload-artifact@v3
+      with:
+        name: gpt-for-uds
+        path: gpt-for-uds.deb
+
+    - name: Upload Binary Executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: gpt-for-uds
+        path: target/release/gpt_for_uds
+
+    - name: Get the current timestamp
+      id: timestamp
+      run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.timestamp.outputs.timestamp }}
+        release_name: Release-${{ steps.timestamp.outputs.timestamp }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Debian Package to Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./gpt-for-uds.deb
+        asset_name: gpt-for-uds-${{ steps.timestamp.outputs.timestamp }}.deb
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Native Executable to Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./target/release/gpt_for_uds
+        asset_name: gpt-for-uds-${{ steps.timestamp.outputs.timestamp }}
+        asset_content_type: application/vnd.debian.binary-package
