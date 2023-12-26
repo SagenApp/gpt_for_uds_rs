@@ -43,6 +43,7 @@ async fn write_string_to_stream(stream: &mut UnixStream, response: String) -> Re
     buffer.get_mut().extend_from_slice(response.as_bytes());
 
     stream.write_all(buffer.get_ref()).await?;
+    stream.flush().await?;
     Ok(())
 }
 
