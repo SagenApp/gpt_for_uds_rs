@@ -1,7 +1,7 @@
 use tokio::net::UnixStream;
 use std::error::Error;
 use std::io::Cursor;
-use futures_util::StreamExt;
+use futures::StreamExt;
 use byteorder::{BigEndian, ReadBytesExt};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use crate::gpt_client::{GptEngine, GptMessage, stream_gpt_response};

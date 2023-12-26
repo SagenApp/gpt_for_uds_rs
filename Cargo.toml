@@ -7,13 +7,12 @@ description = "A GPT client making it easy to use ChatGPT by exposing a simple A
 
 [dependencies]
 byteorder = "1.5"
-tokio = { version = "1.35.1", features = ["full"] }
-chatgpt_rs = { version = "1.2.3", features = ["default", "streams"] }
-futures-util = { version = "0.3.17", features = ["default"] }
-futures = "0.3.30"
+tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread", "signal"] }
+chatgpt_rs = { version = "1.2.3", features = ["json", "streams"] }
+futures = { version = "0.3.30", features = ["async-await", "std", "executor"] }
 clap = { version = "4.4.11", features = ["derive", "env"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = { version = "1.0", features = ["std"] }
 
 [[bin]]
 name = "gpt_for_uds"

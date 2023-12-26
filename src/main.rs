@@ -163,7 +163,7 @@ fn get_configuration() -> Result<(String, String), String> {
         None => return Err("Socket directory must be a valid UTF-8 string!".to_string()),
     };
 
-    if (!socket_dir_string.ends_with("/")) {
+    if !socket_dir_string.ends_with("/") {
         socket_dir_string = socket_dir_string + "/";
     }
 

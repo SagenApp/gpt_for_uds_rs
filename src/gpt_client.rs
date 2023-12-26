@@ -6,6 +6,7 @@ use chatgpt::prelude::Conversation;
 use chatgpt::types::{ChatMessage, ResponseChunk};
 use serde::{Deserialize, Serialize};
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum GptEngine {
     Gpt35Turbo(String),
@@ -13,6 +14,7 @@ pub enum GptEngine {
     Gpt4_32k(String),
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Deserialize, Serialize)]
 pub enum GptActor {
     System,
@@ -20,12 +22,14 @@ pub enum GptActor {
     Assistant
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Deserialize, Serialize)]
 pub struct GptMessage {
     pub(crate) actor: GptActor,
     pub(crate) message: String,
 }
 
+#[allow(dead_code)]
 fn get_client_engine(engine: GptEngine) -> ChatGPTEngine {
     match engine {
         GptEngine::Gpt35Turbo(_) => ChatGPTEngine::Gpt35Turbo,
@@ -34,6 +38,7 @@ fn get_client_engine(engine: GptEngine) -> ChatGPTEngine {
     }
 }
 
+#[allow(dead_code)]
 fn get_client_actor(actor: GptActor) -> chatgpt::types::Role {
     match actor {
         GptActor::System => chatgpt::types::Role::System,
@@ -42,6 +47,7 @@ fn get_client_actor(actor: GptActor) -> chatgpt::types::Role {
     }
 }
 
+#[allow(dead_code)]
 pub fn create_gpt_client(engine: GptEngine) -> Result<ChatGPT, String> {
     let (token, client_engine) = match engine {
         GptEngine::Gpt35Turbo(token) => (token, ChatGPTEngine::Gpt35Turbo),
@@ -59,12 +65,14 @@ pub fn create_gpt_client(engine: GptEngine) -> Result<ChatGPT, String> {
     Ok(client)
 }
 
+#[allow(dead_code)]
 fn create_client_conversation(engine: GptEngine, history: Vec<GptMessage>) -> Result<Conversation, String> {
     let map = get_client_messages(history);
     let conversation = Conversation::new_with_history(create_gpt_client(engine)?, map);
     Ok(conversation)
 }
 
+#[allow(dead_code)]
 pub async fn stream_gpt_response(
     engine: GptEngine,
     mut history: Vec<GptMessage>
@@ -88,6 +96,7 @@ pub async fn stream_gpt_response(
     Ok(Box::pin(stream))
 }
 
+#[allow(dead_code)]
 fn get_client_messages(history: Vec<GptMessage>) -> Vec<ChatMessage> {
     history.iter().map(|message| ChatMessage {
         role: get_client_actor(message.clone().actor),
