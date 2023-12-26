@@ -52,8 +52,9 @@ async fn main() -> Result<(), String> {
     ];
 
     for (socket_path, engine) in socket_paths {
-        fs::remove_file(socket_path).ok();
-        let listener = UnixListener::bind(socket_dir_string.clone() + socket_path).map_err(|e| e.to_string())?;
+        let socket_file = socket_dir_string.clone() + socket_path;
+        fs::remove_file(&socket_file).ok();
+        let listener = UnixListener::bind(&socket_file).map_err(|e| e.to_string())?;
 
         // Give the socket a mode of 660 to allow users in same group to access.
         let permissions = Permissions::from_mode(0o660);
