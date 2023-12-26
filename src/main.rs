@@ -58,7 +58,7 @@ async fn main() -> Result<(), String> {
 
         // Give the socket a mode of 660 to allow users in same group to access.
         let permissions = Permissions::from_mode(0o660);
-        fs::set_permissions(socket_path, permissions).map_err(|e| e.to_string())?;
+        fs::set_permissions(socket_file, permissions).map_err(|e| e.to_string())?;
 
         println!("Server listening on {}", socket_path);
 
