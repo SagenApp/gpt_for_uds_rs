@@ -26,3 +26,6 @@ path = "src/client.rs"
 [profile.release]
 lto = true # Enable link-time optimization.
 opt-level = "z"  # Optimize for size.
+strip = true # Strip symbols from the binary.
+codegen-units = 1 # Disable parallel codegen to allow for more optimization
+panic = "abort" # Abort on panic to reduce binary size

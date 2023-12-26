@@ -1,3 +1,9 @@
+gpt-for-uds (1.0-20231229222602) unstable; urgency=medium
+
+  * Make binary a lot smaller
+
+ -- Alexander Sagen <alexander.sagen@visma.com>  Wed, 28 Dec 2023 23:26:02 +0100
+
 gpt-for-uds (1.0-20231228222602) unstable; urgency=medium
 
   * Next version with various fixes and improvements
